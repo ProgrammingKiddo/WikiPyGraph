@@ -1,4 +1,5 @@
 import scrapy
+import math
 import pika, os, logging
 from scrapy.selector import Selector 
 from scrapy.http.request import Request
@@ -8,7 +9,7 @@ class WikiSpider(scrapy.Spider):
 
 
 
-    def callback(self, ch, method, properties, body):
+    def callback(ch, method, properties, body):
         self.input_proces(body)
 
     def input_proces(self, mensaje):
@@ -18,7 +19,7 @@ class WikiSpider(scrapy.Spider):
             urls=[line.split("$")[1]]
             n_enlaces=int(line.split("$")[2])
             n_saltos=int(line.split("$")[3])
-            saltos=n_saltos*n_enlaces
+            saltos = math.pow(n_enlaces, n_saltos)
         n_terminos=0
         c_saltos=0
         #Nombre$enlace$enlaces$saltos
@@ -55,6 +56,7 @@ class WikiSpider(scrapy.Spider):
                 WikiSpider.c_saltos=WikiSpider.c_saltos+1
                 yield response.follow(WikiSpider.urls[WikiSpider.c_saltos], self.parse)
                 
+        publish(cuerpo)
         self.channel.basic_publish(exchange="", routing_key="relacionNodos", body=cuerpo)
 
     name="Wiki Spider"
