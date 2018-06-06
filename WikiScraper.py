@@ -19,6 +19,7 @@ class WikiSpider(scrapy.Spider):
 
     url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/%2f')
     params = pika.URLParameters(url)
+    params.socket_timeout = 5
     connection = pika.BlockingConnection(params)
 
     channel = connection.channel() # Abrimos un canal de comunicación
