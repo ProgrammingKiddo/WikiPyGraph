@@ -7,29 +7,9 @@ class WikiSpider(scrapy.Spider):
 
 
 
-    name="Wiki Spider"
-    cuerpo = ""
-    origen = []
-    urls = []
-    n_enlaces = 0
-    n_saltos = 0
-    n_terminos = 0
-    c_saltos = 0
-    saltos = 0
 
-    url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/%2f')
-    params = pika.URLParameters(url)
-    params.socket_timeout = 5
-    connection = pika.BlockingConnection(params)
-
-    channel = connection.channel() # Abrimos un canal de comunicación
-    channel.queue_declare(queue='scrapyInput') # Cola de lectura
-    channel.queue_declare(queue="relacionNodos") # Cola de escritura
-
-    channel.basic_consume(callback, queue='scrapyInput', no_ack=True)
-    channel.start_consuming()
-    connection.close()
-
+    def callback(self, ch, method, properties, body):
+        self.input_proces(body)
 
     def input_proces(self, mensaje):
 
@@ -45,8 +25,7 @@ class WikiSpider(scrapy.Spider):
 
     #Creamos una función que va a ser llamada al llegar procesos nuevos
     # a la cola de mensajes
-    def callback(self, ch, method, properties, body):
-        self.input_proces(body)
+    
 
     def start_requests(self):
         yield Request(WikiSpider.urls[0], self.parse)
@@ -77,3 +56,28 @@ class WikiSpider(scrapy.Spider):
                 yield response.follow(WikiSpider.urls[WikiSpider.c_saltos], self.parse)
                 
         self.channel.basic_publish(exchange="", routing_key="relacionNodos", body=cuerpo)
+
+    name="Wiki Spider"
+    cuerpo = ""
+    origen = []
+    urls = []
+    n_enlaces = 0
+    n_saltos = 0
+    n_terminos = 0
+    c_saltos = 0
+    saltos = 0
+
+    url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/%2f')
+    params = pika.URLParameters(url)
+    params.socket_timeout = 5
+    connection = pika.BlockingConnection(params)
+
+    channel = connection.channel() # Abrimos un canal de comunicación
+    channel.queue_declare(queue='scrapyInput') # Cola de lectura
+    channel.queue_declare(queue="relacionNodos") # Cola de escritura
+
+    print("\n\n\nEsperando para consumir...\n\n\n")
+
+    channel.basic_consume(callback, queue='scrapyInput', no_ack=True)
+    channel.start_consuming()
+    connection.close()

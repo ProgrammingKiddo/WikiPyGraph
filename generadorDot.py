@@ -55,6 +55,7 @@ channel = connection.channel()
 channel.queue_declare(queue='relacionNodos') # Cola de lectura
 channel.queue_declare(queue='graficosRelacion') # Cola de escritura
 
+print("Esperando para consumir...")
 channel.basic_consume(callback, queue='relacionNodos', no_ack=True)
 channel.start_consuming()
 channel.close()
