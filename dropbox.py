@@ -5,7 +5,7 @@ import dropbox
 
 
 
-TOKEN = 'zaOSmPB-YZAAAAAAAAAABs6lSuUqn7vXbcEfSZjZeNkTyrOMDGgjnV8rjcegmPlZ'
+TOKEN = ""
 
 
 def publish(self, msg):
